@@ -4,7 +4,16 @@ export const LEVELS = Object.freeze([
   blue:{start:[0,2],goal:[3,1],walls:[[1,1],[1,2],[1,3]]}}),
  Object.freeze({id:'2',name:'Сложный манёвр',size:4,
   red:{start:[3,3],goal:[3,0],walls:[[1,0],[1,3],[2,3],[3,1]]},
-  blue:{start:[2,3],goal:[1,2],walls:[[2,0],[3,0],[3,1],[3,2]]}})
+  blue:{start:[2,3],goal:[1,2],walls:[[2,0],[3,0],[3,1],[3,2]]}}),
+ Object.freeze({id:'3',name:'Опора на стены',hint:'Преграда для одного — время для другого.',size:4,
+  red:{start:[2,0],goal:[0,2],walls:[[0,1],[3,0],[1,0]]},
+  blue:{start:[3,2],goal:[0,2],walls:[[1,1],[3,1],[2,0]]}}),
+ Object.freeze({id:'4',name:'Ложный короткий путь',hint:'Близкая цель ещё не значит короткий путь.',size:4,
+  red:{start:[1,2],goal:[1,1],walls:[[0,0],[2,2],[3,2]]},
+  blue:{start:[3,2],goal:[3,0],walls:[[3,1],[2,2],[1,0]]}}),
+ Object.freeze({id:'5',name:'Финальная комбинация',hint:'Объедини ожидание у стен и обход близкой цели.',size:4,
+  red:{start:[0,3],goal:[3,1],walls:[[3,3],[2,3],[3,2],[0,0]]},
+  blue:{start:[0,1],goal:[1,1],walls:[[2,2],[3,3],[0,0],[0,3]]}})
 ]);
 export const LEVEL=LEVELS[0];
 export const DELTAS={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]};

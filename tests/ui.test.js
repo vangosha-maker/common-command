@@ -10,7 +10,7 @@ class Element {
 }
 test('UI defaults to level 2; switcher, keypad, undo, reset and keyboard work',async()=>{
  const elements=new Map();const get=s=>{if(!elements.has(s))elements.set(s,new Element());return elements.get(s)};
- const directions=[...'UDLR'].map(dir=>new Element({dir})),levels=['1','2'].map(level=>new Element({level}));
+ const directions=[...'UDLR'].map(dir=>new Element({dir})),levels=['1','2','3','4','5'].map(level=>new Element({level}));
  let keydown;
  globalThis.document={querySelector:get,querySelectorAll:s=>s==='[data-dir]'?directions:levels,createElement:()=>new Element()};
  globalThis.window={addEventListener:(_,fn)=>{keydown=fn}};
@@ -23,5 +23,14 @@ test('UI defaults to level 2; switcher, keypad, undo, reset and keyboard work',a
  levels[0].click();assert.equal(get('#count').textContent,'00');assert.equal(get('#undo').disabled,true);assert.ok(directions.every(b=>!b.disabled));assert.equal(get('.level-tag').textContent,'ЗАДАЧА 01');
  for(const d of 'UULLRULDDDR')directions.find(b=>b.dataset.dir===d).click();assert.equal(get('#count').textContent,'11');assert.match(get('#status-title').textContent,/синхронизация/);
  levels[1].click();assert.equal(get('#count').textContent,'00');keydown({key:'ArrowDown',preventDefault(){}});assert.equal(get('#count').textContent,'01');get('#reset').click();assert.equal(get('#count').textContent,'00');
+ for(const [index,path] of ['URURRUL','RUUULLLRDDRLULD','RDRDLDLULDDURRLD'].entries()){
+  levels[index+2].click();assert.equal(get('#count').textContent,'00');
+  assert.equal(get('#next-level').hidden,true);
+  for(const d of path)directions.find(b=>b.dataset.dir===d).click();
+  assert.match(get('#status-title').textContent,/синхронизация/);
+  assert.equal(get('#next-level').hidden,index===2);
+  if(index<2){get('#next-level').click();assert.equal(levels[index+3].attributes['aria-pressed'],'true');assert.equal(get('#count').textContent,'00');}
+ }
+ assert.match(get('.status-icon').innerHTML,/<svg/);
  delete globalThis.document;delete globalThis.window;
 });

@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {LEVELS,initial,step,createGame} from '../dist/engine.js';
 function shortest(level){
- const queue=[initial(level)],seen=new Set();
+ const queue=[initial(level)],seen=new Set([[...level.red.start,...level.blue.start].join(',')]);
  for(let head=0;head<queue.length;head++){
+  assert.ok(queue.length<=256,'4x4 boards have at most 256 position pairs');
   const s=queue[head];
   for(const d of 'UDLR'){
    const next=step(s,d,level);
@@ -17,7 +18,7 @@ function shortest(level){
 }
 for(const [index,level] of LEVELS.entries()){
  test(`level ${level.id}: BFS verifies shortest legal first-arrival solution`,()=>{
-  const solution=shortest(level);assert.equal(solution.length,[11,19][index]);
+  const solution=shortest(level);assert.ok(solution,'level must be solvable');assert.equal(solution.length,[11,19,7,15,16][index]);
   let s=initial(level);for(const [i,d] of [...solution].entries()){
    s=step(s,d,level);assert.equal(s.status,i===solution.length-1?'won':'playing');
   }
@@ -32,6 +33,23 @@ for(const [index,level] of LEVELS.entries()){
   }
  });
 }
+test('new puzzles teach wall waiting, a tempting early arrival, and their combination',()=>{
+ for(const level of [LEVELS[2],LEVELS[4]]){
+  let state=initial(level);const wallWaits=new Set();
+  for(const d of shortest(level)){
+   const next=step(state,d,level),delta={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]}[d];
+   for(const c of ['red','blue']){
+    const attempted=state[c].map((v,i)=>v+delta[i]);
+    if(level[c].walls.some(w=>w.every((v,i)=>v===attempted[i]))&&next[c].every((v,i)=>v===state[c][i]))wallWaits.add(c);
+   }
+   state=next;
+  }
+  assert.ok(wallWaits.has('red'),'solution uses a red wall to wait');
+  if(level.id==='5')assert.ok(wallWaits.has('blue'),'finale also uses a blue wall to wait');
+ }
+ assert.equal(step(initial(LEVELS[3]),'L',LEVELS[3]).status,'lost','tempting one-step red goal loses');
+ assert.equal(step(initial(LEVELS[4]),'D',LEVELS[4]).status,'lost','finale also punishes rushing the nearby goal');
+});
 test('second level loss, undo, reset, victory, undo victory',()=>{
  const g=createGame(LEVELS[1]);for(const d of 'ULLLDD')g.move(d);assert.equal(g.state.status,'lost');assert.equal(g.move('R').status,'lost');
  g.undo();assert.equal(g.state.status,'playing');g.reset();assert.deepEqual(g.state,initial(LEVELS[1]));assert.equal(g.canUndo,false);
